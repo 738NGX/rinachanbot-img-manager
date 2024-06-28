@@ -51,19 +51,30 @@ export function apply(ctx: Context, config: Config) {
     }, { primaryKey: 'id', autoInc: true });
 
     // 新建图库
-    ctx.command('rinachanbot/新建图库 [name:string]', '新建一个图库')
-        .action(async ({ session }, name) => {
+    ctx.command('rinachanbot/新建图库 [name:string] [...rest]', '新建一个图库')
+        .action(async ({ session }, name, ...rest) => {
             if (!name) return '请输入图库名[X﹏X]';
             
             // 检查是否存在同名图库
-            const duplicate = await ctx.database.get('rina.galleryName', { name: [name], })
+            let duplicate = await ctx.database.get('rina.galleryName', { name: [name], })
             if (duplicate.length != 0) { return '图库已存在[X﹏X]'; }
 
-            const newGallery = await ctx.database.create('rina.gallery', { path: name })
-            const newGalleryName = await ctx.database.create('rina.galleryName', { name: name, galleryId: newGallery.id })
+            let newGallery = await ctx.database.create('rina.gallery', { path: name })
+            let newGalleryName = await ctx.database.create('rina.galleryName', { name: name, galleryId: newGallery.id })
             await fs.promises.mkdir(config.galleryPath + "/" + name, { recursive: true });
 
-            return '图库创建成功! [=^▽^=]';
+            // 多个图库的创建
+            if(rest.length > 0) {
+                for (const rest_name of rest) {
+                    duplicate = await ctx.database.get('rina.galleryName', { name: [rest_name], })
+                    if (duplicate.length != 0) { return `图库${rest_name}已存在[X﹏X]`; }
+                    newGalleryName = await ctx.database.create('rina.galleryName', { name: rest_name, galleryId: newGallery.id })
+                    await fs.promises.mkdir(config.galleryPath + "/" + rest_name, { recursive: true });
+                }
+            }
+
+            let prefix= rest.length > 0 ? `${rest.length+1}个` : ''
+            return `${prefix}图库创建成功! [=^▽^=]`;
         });
 
     // 关联图库
