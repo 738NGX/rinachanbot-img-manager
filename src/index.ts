@@ -68,6 +68,7 @@ export function apply(ctx: Context, config: Config) {
                 for (const rest_name of rest) {
                     duplicate = await ctx.database.get('rina.galleryName', { name: [rest_name], })
                     if (duplicate.length != 0) { return `图库${rest_name}已存在[X﹏X]`; }
+                    newGallery = await ctx.database.create('rina.gallery', { path: rest_name })
                     newGalleryName = await ctx.database.create('rina.galleryName', { name: rest_name, galleryId: newGallery.id })
                     await fs.promises.mkdir(config.galleryPath + "/" + rest_name, { recursive: true });
                 }
