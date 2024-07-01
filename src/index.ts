@@ -51,10 +51,10 @@ export function apply(ctx: Context, config: Config) {
     }, { primaryKey: 'id', autoInc: true });
 
     // 新建图库
-    ctx.command('rinachanbot/新建图库 [name:string] [...rest]', '新建一个图库')
+    ctx.command('rinachanbot/新建图库 <name:string> [...rest]', '新建一个图库')
         .action(async ({ session }, name, ...rest) => {
             if (!name) return '请输入图库名[X﹏X]';
-            
+
             // 检查是否存在同名图库
             let duplicate = await ctx.database.get('rina.galleryName', { name: [name], })
             if (duplicate.length != 0) { return '图库已存在[X﹏X]'; }
@@ -64,7 +64,7 @@ export function apply(ctx: Context, config: Config) {
             await fs.promises.mkdir(config.galleryPath + "/" + name, { recursive: true });
 
             // 多个图库的创建
-            if(rest.length > 0) {
+            if (rest.length > 0) {
                 for (const rest_name of rest) {
                     duplicate = await ctx.database.get('rina.galleryName', { name: [rest_name], })
                     if (duplicate.length != 0) { return `图库${rest_name}已存在[X﹏X]`; }
@@ -74,7 +74,7 @@ export function apply(ctx: Context, config: Config) {
                 }
             }
 
-            let prefix= rest.length > 0 ? `${rest.length+1}个` : ''
+            let prefix = rest.length > 0 ? `${rest.length + 1}个` : ''
             return `${prefix}图库创建成功! [=^▽^=]`;
         });
 
@@ -82,7 +82,7 @@ export function apply(ctx: Context, config: Config) {
     ctx.command('rinachanbot/关联图库 <name:string> <gallery:string>', '关联一个名称到已有图库')
         .action(async ({ session }, name, gallery) => {
             if (!name) return '请输入图库名[X﹏X]';
-            
+
             // 检查是否存在同名图库
             const duplicate = await ctx.database.get('rina.galleryName', { name: [name], })
             if (duplicate.length != 0) { return '名称已存在[X﹏X]'; }
@@ -96,12 +96,12 @@ export function apply(ctx: Context, config: Config) {
         });
 
     // 加图
-    ctx.command('rinachanbot/加图 [name:string] [filename:string]', '保存图片到指定图库')
+    ctx.command('rinachanbot/加图 <name:string> [filename:string]', '保存图片到指定图库')
         .option('ext', '-e <ext:string>')
         .option('name', '-n <name:string>')
         .action(async ({ session, options }, name, filename) => {
             if (!name) return '请输入图库名[X﹏X]';
-            
+
             // 选择图库
             const selected = await ctx.database.get('rina.galleryName', { name: [name], });
             if (selected.length == 0) return '不存在的图库,请重新输入或新建/关联图库[X﹏X]';
@@ -146,9 +146,9 @@ export function apply(ctx: Context, config: Config) {
         });
 
     // 璃奈板
-    ctx.command('rinachanbot/璃奈板 [name:string] [count:number]', '随机输出图片')
+    ctx.command('rinachanbot/璃奈板 <name:string> [count:number]', '随机输出图片')
         .action(async ({ session }, name, count) => {
-            if(!name) return '请输入图库名[X﹏X]';
+            if (!name) return '请输入图库名[X﹏X]';
 
             // 处理数量
             if (!count) count = 1
@@ -158,8 +158,9 @@ export function apply(ctx: Context, config: Config) {
             const selected = await ctx.database.get('rina.galleryName', { name: [name], });
             if (selected.length == 0) return '不存在的图库[X﹏X]';
             const selectedSubPath = await ctx.database.get('rina.gallery', { id: [selected[0].galleryId], });
-            const gallery = selectedSubPath[0].path;
-            
+            const randomIndex = selectedSubPath.length == 1 ? 0 : Math.floor(Math.random() * selectedSubPath.length);
+            const gallery = selectedSubPath[randomIndex].path;
+
             // 选择图片
             let pickeed = ImagerPicker(config.galleryPath, gallery, count)
             let res = []
