@@ -157,9 +157,9 @@ export function apply(ctx: Context, config: Config) {
             // 匹配图库
             const selected = await ctx.database.get('rina.galleryName', { name: [name], });
             if (selected.length == 0) return '不存在的图库[X﹏X]';
-            const selectedSubPath = await ctx.database.get('rina.gallery', { id: [selected[0].galleryId], });
-            const randomIndex = selectedSubPath.length == 1 ? 0 : Math.floor(Math.random() * selectedSubPath.length);
-            const gallery = selectedSubPath[randomIndex].path;
+            const index = selected.length == 1 ? 0 : Math.floor(Math.random() * selected.length);
+            const selectedSubPath = await ctx.database.get('rina.gallery', { id: [selected[index].galleryId], });
+            const gallery = selectedSubPath[0].path;
 
             // 选择图片
             let pickeed = ImagerPicker(config.galleryPath, gallery, count)
